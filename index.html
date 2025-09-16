@@ -7,11 +7,29 @@
     <style>
         body {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
             background-color: black;
             color: white;
+            font-family: monospace;
+        }
+        .instructions {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid white;
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .controls {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 10px;
+        }
+        .control-group {
+            text-align: center;
         }
         canvas {
             border: 1px solid white;
@@ -19,6 +37,22 @@
     </style>
 </head>
 <body>
+    <div class="instructions">
+        <h2>🏓 PONG GAME</h2>
+        <div class="controls">
+            <div class="control-group">
+                <h3>Player 1 (Left Paddle)</h3>
+                <p><strong>W</strong> / <strong>↑</strong> - Move Up</p>
+                <p><strong>S</strong> / <strong>↓</strong> - Move Down</p>
+            </div>
+            <div class="control-group">
+                <h3>Game Rules</h3>
+                <p>• Prevent the ball from reaching your side</p>
+                <p>• Ball bounces off paddles and walls</p>
+                <p>• Use any of the control keys to move</p>
+            </div>
+        </div>
+    </div>
     <canvas id="pong" width="800" height="400"></canvas>
     <script>
         const canvas = document.getElementById('pong');
@@ -31,6 +65,17 @@
         let playerPaddle = { x: 0, y: canvas.height / 2 - paddleHeight / 2, width: paddleWidth, height: paddleHeight };
         let aiPaddle = { x: canvas.width - paddleWidth, y: canvas.height / 2 - paddleHeight / 2, width: paddleWidth, height: paddleHeight };
         let ball = { x: canvas.width / 2, y: canvas.height / 2, size: ballSize, speed: { x: 5, y: 5 } };
+
+        // Player controls
+        const keys = {
+            w: false,
+            s: false,
+            ArrowUp: false,
+            ArrowDown: false
+        };
+
+        // Paddle movement speed
+        const paddleSpeed = 7;
 
         // Draw function
         function draw() {
@@ -45,6 +90,22 @@
 
         // Update function
         function update() {
+            // Handle player paddle movement
+            if (keys.w || keys.ArrowUp) {
+                playerPaddle.y = Math.max(0, playerPaddle.y - paddleSpeed);
+            }
+            if (keys.s || keys.ArrowDown) {
+                playerPaddle.y = Math.min(canvas.height - playerPaddle.height, playerPaddle.y + paddleSpeed);
+            }
+
+            // Simple AI for the right paddle
+            const aiSpeed = 4;
+            if (ball.y < aiPaddle.y + aiPaddle.height / 2) {
+                aiPaddle.y = Math.max(0, aiPaddle.y - aiSpeed);
+            } else if (ball.y > aiPaddle.y + aiPaddle.height / 2) {
+                aiPaddle.y = Math.min(canvas.height - aiPaddle.height, aiPaddle.y + aiSpeed);
+            }
+
             ball.x += ball.speed.x;
             ball.y += ball.speed.y;
 
@@ -74,6 +135,31 @@
             update();
             requestAnimationFrame(gameLoop);
         }
+
+        // Keyboard event listeners
+        document.addEventListener('keydown', (event) => {
+            const key = event.key.toLowerCase();
+            if (key in keys) {
+                keys[key] = true;
+                event.preventDefault();
+            }
+            if (event.key in keys) {
+                keys[event.key] = true;
+                event.preventDefault();
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            const key = event.key.toLowerCase();
+            if (key in keys) {
+                keys[key] = false;
+                event.preventDefault();
+            }
+            if (event.key in keys) {
+                keys[event.key] = false;
+                event.preventDefault();
+            }
+        });
 
         // Start the game
         gameLoop();
