@@ -66,6 +66,10 @@
         let aiPaddle = { x: canvas.width - paddleWidth, y: canvas.height / 2 - paddleHeight / 2, width: paddleWidth, height: paddleHeight };
         let ball = { x: canvas.width / 2, y: canvas.height / 2, size: ballSize, speed: { x: 5, y: 5 } };
 
+        // Score counters
+        let playerScore = 0;
+        let aiScore = 0;
+
         // Player controls
         const keys = {
             w: false,
@@ -86,6 +90,21 @@
             ctx.beginPath();
             ctx.arc(ball.x, ball.y, ball.size, 0, Math.PI * 2);
             ctx.fill();
+
+            // Draw scores
+            ctx.font = '48px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(playerScore, canvas.width / 4, 60);
+            ctx.fillText(aiScore, (canvas.width * 3) / 4, 60);
+
+            // Draw center line
+            ctx.setLineDash([5, 15]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.strokeStyle = 'white';
+            ctx.stroke();
+            ctx.setLineDash([]);
         }
 
         // Update function
@@ -122,10 +141,23 @@
                 ball.speed.y = -ball.speed.y;
             }
 
-            // Reset ball if it goes out of bounds
-            if (ball.x < 0 || ball.x > canvas.width) {
+            // Reset ball if it goes out of bounds and update scores
+            if (ball.x < 0) {
+                // AI scores (ball went past player paddle)
+                aiScore++;
                 ball.x = canvas.width / 2;
                 ball.y = canvas.height / 2;
+                // Reset ball direction to go towards the player who was scored on
+                ball.speed.x = 5;
+                ball.speed.y = Math.random() > 0.5 ? 5 : -5;
+            } else if (ball.x > canvas.width) {
+                // Player scores (ball went past AI paddle)
+                playerScore++;
+                ball.x = canvas.width / 2;
+                ball.y = canvas.height / 2;
+                // Reset ball direction to go towards the player who was scored on
+                ball.speed.x = -5;
+                ball.speed.y = Math.random() > 0.5 ? 5 : -5;
             }
         }
 
