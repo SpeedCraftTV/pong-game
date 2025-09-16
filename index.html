@@ -32,6 +32,10 @@
         let aiPaddle = { x: canvas.width - paddleWidth, y: canvas.height / 2 - paddleHeight / 2, width: paddleWidth, height: paddleHeight };
         let ball = { x: canvas.width / 2, y: canvas.height / 2, size: ballSize, speed: { x: 5, y: 5 } };
 
+        // Input handling
+        const keys = {};
+        let mouseY = 0;
+
         // Draw function
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -45,6 +49,29 @@
 
         // Update function
         function update() {
+            // Handle player paddle movement with keyboard
+            const paddleSpeed = 7;
+            if (keys['ArrowUp'] || keys['KeyW']) {
+                playerPaddle.y = Math.max(0, playerPaddle.y - paddleSpeed);
+            }
+            if (keys['ArrowDown'] || keys['KeyS']) {
+                playerPaddle.y = Math.min(canvas.height - playerPaddle.height, playerPaddle.y + paddleSpeed);
+            }
+
+            // Handle player paddle movement with mouse
+            if (mouseY > 0) {
+                playerPaddle.y = Math.max(0, Math.min(canvas.height - playerPaddle.height, mouseY - playerPaddle.height / 2));
+            }
+
+            // Simple AI for computer paddle
+            const aiSpeed = 4;
+            const aiCenter = aiPaddle.y + aiPaddle.height / 2;
+            if (ball.y < aiCenter - 20) {
+                aiPaddle.y = Math.max(0, aiPaddle.y - aiSpeed);
+            } else if (ball.y > aiCenter + 20) {
+                aiPaddle.y = Math.min(canvas.height - aiPaddle.height, aiPaddle.y + aiSpeed);
+            }
+
             ball.x += ball.speed.x;
             ball.y += ball.speed.y;
 
@@ -74,6 +101,25 @@
             update();
             requestAnimationFrame(gameLoop);
         }
+
+        // Event listeners for keyboard controls
+        document.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        // Event listeners for mouse controls
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mouseY = e.clientY - rect.top;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            mouseY = 0; // Stop mouse control when mouse leaves canvas
+        });
 
         // Start the game
         gameLoop();
