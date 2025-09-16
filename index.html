@@ -32,6 +32,14 @@
         let aiPaddle = { x: canvas.width - paddleWidth, y: canvas.height / 2 - paddleHeight / 2, width: paddleWidth, height: paddleHeight };
         let ball = { x: canvas.width / 2, y: canvas.height / 2, size: ballSize, speed: { x: 5, y: 5 } };
 
+        // Input controls
+        const keys = {};
+        const paddleSpeed = 6;
+        
+        // Make variables globally accessible for debugging
+        window.playerPaddle = playerPaddle;
+        window.keys = keys;
+
         // Draw function
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -45,6 +53,14 @@
 
         // Update function
         function update() {
+            // Handle player paddle movement
+            if (keys['ArrowUp'] && playerPaddle.y > 0) {
+                playerPaddle.y -= paddleSpeed;
+            }
+            if (keys['ArrowDown'] && playerPaddle.y < canvas.height - playerPaddle.height) {
+                playerPaddle.y += paddleSpeed;
+            }
+
             ball.x += ball.speed.x;
             ball.y += ball.speed.y;
 
@@ -74,6 +90,27 @@
             update();
             requestAnimationFrame(gameLoop);
         }
+
+        // Input event listeners
+        document.addEventListener('keydown', function(e) {
+            keys[e.code] = true;
+        });
+
+        document.addEventListener('keyup', function(e) {
+            keys[e.code] = false;
+        });
+
+        // Mouse wheel control for paddle
+        canvas.addEventListener('wheel', function(e) {
+            e.preventDefault(); // Prevent page scroll
+            const wheelDirection = e.deltaY > 0 ? 1 : -1; // 1 for down, -1 for up
+            const newY = playerPaddle.y + (wheelDirection * paddleSpeed * 2);
+            
+            // Apply bounds checking
+            if (newY >= 0 && newY <= canvas.height - playerPaddle.height) {
+                playerPaddle.y = newY;
+            }
+        });
 
         // Start the game
         gameLoop();
